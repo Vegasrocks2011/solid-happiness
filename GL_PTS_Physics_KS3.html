@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GL PTS Physics — KS3</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A0F1E;
+  --navy-mid:#111827;
+  --navy-lite:#1C2537;
+  --navy-card:#1E2A3A;
+  --indigo:#4F46E5;
+  --indigo-light:#6366F1;
+  --indigo-glow:rgba(79,70,229,.15);
+  --indigo-glow2:rgba(99,102,241,.08);
+  --orange:#F97316;
+  --orange-bg:rgba(249,115,22,.1);
+  --red:#EF4444;
+  --red-bg:rgba(239,68,68,.1);
+  --green:#22C55E;
+  --green-bg:rgba(34,197,94,.1);
+  --amber:#EAB308;
+  --amber-bg:rgba(234,179,8,.1);
+  --sky:#0EA5E9;
+  --sky-bg:rgba(14,165,233,.1);
+  --text:#E2E8F0;
+  --text-mid:#94A3B8;
+  --text-dim:#475569;
+  --border:rgba(255,255,255,.07);
+  --border-hi:rgba(79,70,229,.4);
+  --radius:14px;
+  --radius-sm:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--navy)}
+::-webkit-scrollbar-thumb{background:var(--navy-lite);border-radius:2px}
+
+/* ── HEADER ── */
+.header{
+  background:linear-gradient(160deg,#0D1428,var(--navy-mid));
+  border-bottom:1px solid var(--border);
+  padding:20px 28px 0;
+  position:sticky;top:0;z-index:100;
+  backdrop-filter:blur(20px);
+}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.logo{display:flex;align-items:center;gap:13px}
+.logo-icon{
+  width:44px;height:44px;
+  background:linear-gradient(135deg,var(--indigo),var(--indigo-light));
+  border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;box-shadow:0 0 24px var(--indigo-glow);
+}
+.logo-text h1{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.logo-text p{font-size:11px;color:var(--text-mid);margin-top:2px}
+.header-meta{
+  font-size:11px;font-family:'Space Mono',monospace;
+  color:var(--indigo-light);
+  background:var(--indigo-glow);
+  border:1px solid var(--border-hi);
+  padding:6px 14px;border-radius:20px;
+}
+.tabs{display:flex;gap:2px;overflow-x:auto;padding-bottom:0}
+.tabs::-webkit-scrollbar{height:0}
+.tab{
+  padding:11px 18px;
+  font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;
+  border:none;cursor:pointer;
+  border-radius:10px 10px 0 0;
+  background:transparent;color:var(--text-dim);
+  transition:all .18s;white-space:nowrap;
+  display:flex;align-items:center;gap:7px;
+}
+.tab:hover{color:var(--text-mid);background:rgba(255,255,255,.04)}
+.tab.active{background:var(--navy);color:var(--indigo-light);border-top:2px solid var(--indigo-light)}
+.tab-num{
+  font-family:'Space Mono',monospace;font-size:10px;font-weight:700;
+  background:var(--navy-lite);color:var(--text-dim);
+  padding:1px 7px;border-radius:10px;
+}
+.tab.active .tab-num{background:var(--indigo-glow);color:var(--indigo-light)}
+
+/* ── LAYOUT ── */
+.shell{max-width:860px;margin:0 auto;padding:28px 16px 80px}
+.pane{display:none}
+.pane.active{display:block}
+.section-lbl{
+  font-size:11px;font-weight:700;color:var(--indigo-light);
+  text-transform:uppercase;letter-spacing:.07em;
+  font-family:'Space Mono',monospace;
+  margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── KNOWLEDGE TAB ── */
+.topic-block{margin-bottom:34px}
+.topic-hdr{
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:14px;padding:14px 18px;
+  background:var(--navy-card);
+  border:1px solid var(--border);
+  border-left:3px solid var(--indigo-light);
+  border-radius:var(--radius);
+}
+.topic-icon{font-size:24px;flex-shrink:0}
+.topic-hdr-text h3{font-size:15px;font-weight:600;color:var(--text)}
+.topic-hdr-text p{font-size:12px;color:var(--text-mid);margin-top:3px;line-height:1.5}
+.know-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.know-card{
+  background:var(--navy-card);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:14px 16px;
+  transition:border-color .15s,box-shadow .15s;
+}
+.know-card:hover{border-color:var(--border-hi);box-shadow:0 0 18px var(--indigo-glow)}
+.kc-tag{
+  display:inline-block;font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.07em;
+  padding:2px 8px;border-radius:10px;margin-bottom:8px;
+  font-family:'Space Mono',monospace;
+}
+.tag-must{background:rgba(239,68,68,.2);color:#EF4444}
+.tag-should{background:rgba(234,179,8,.2);color:#EAB308}
+.tag-could{background:rgba(79,70,229,.2);color:#818CF8}
+.kc-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.4}
+.kc-body{font-size:12px;color:var(--text-mid);line-height:1.65}
+.kc-body ul{padding-left:14px;margin-top:4px}
+.kc-body li{margin-bottom:3px}
+.formula{
+  font-family:'Space Mono',monospace;
+  background:var(--navy-lite);color:var(--indigo-light);
+  padding:2px 7px;border-radius:5px;font-size:11px;
+  display:inline-block;margin:2px 2px;
+}
+
+/* ── CHECKLIST TAB ── */
+.summary-intro{
+  background:var(--navy-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 24px;margin-bottom:22px;
+}
+.summary-intro h2{font-size:16px;font-weight:700;color:var(--indigo-light);margin-bottom:8px}
+.summary-intro p{font-size:13px;color:var(--text-mid);line-height:1.65}
+.cl-progress{
+  background:var(--navy-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px 22px;margin-bottom:22px;
+  display:flex;gap:20px;align-items:center;flex-wrap:wrap;
+}
+.cl-stat{text-align:center}
+.cl-val{font-size:26px;font-weight:700;font-family:'Space Mono',monospace;color:var(--indigo-light)}
+.cl-lbl{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.cl-bar-wrap{flex:1}
+.cl-bar-label{font-size:11px;color:var(--text-mid);margin-bottom:6px;display:flex;justify-content:space-between}
+.cl-track{height:8px;background:var(--navy-lite);border-radius:4px;overflow:hidden}
+.cl-fill{height:100%;background:var(--indigo-light);border-radius:4px;transition:width .4s}
+.cl-group{margin-bottom:22px}
+.cl-topic-hdr{
+  font-size:12px;font-weight:700;color:var(--indigo-light);
+  padding:10px 16px;
+  background:var(--indigo-glow);border:1px solid var(--border-hi);
+  border-radius:var(--radius-sm) var(--radius-sm) 0 0;
+  display:flex;align-items:center;gap:8px;
+  font-family:'Space Mono',monospace;letter-spacing:.02em;
+}
+.cl-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:11px 16px;
+  background:var(--navy-card);border:1px solid var(--border);border-top:none;
+  cursor:pointer;transition:background .12s;
+}
+.cl-item:last-child{border-radius:0 0 var(--radius-sm) var(--radius-sm)}
+.cl-item:hover{background:var(--navy-lite)}
+.cl-item.ck{background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.2)}
+.cl-box{
+  width:18px;height:18px;border:1.5px solid var(--text-dim);
+  border-radius:5px;flex-shrink:0;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.cl-item.ck .cl-box{background:var(--green);border-color:var(--green)}
+.cl-tick{font-size:11px;color:#fff;display:none}
+.cl-item.ck .cl-tick{display:block}
+.cl-text{font-size:13px;color:var(--text-mid);line-height:1.55;flex:1}
+.cl-item.ck .cl-text{color:var(--text-dim);text-decoration:line-through}
+
+/* ── QUESTION CARDS ── */
+.q-filter{
+  display:flex;gap:7px;flex-wrap:wrap;padding:14px 0;margin-bottom:18px;
+  border-bottom:1px solid var(--border);align-items:center;
+}
+.qfl{font-size:11px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
+.qpill{
+  padding:5px 12px;border:1px solid var(--border);border-radius:20px;
+  font-size:11px;font-weight:600;cursor:pointer;background:transparent;
+  color:var(--text-dim);transition:all .13s;font-family:'Outfit',sans-serif;
+}
+.qpill:hover{border-color:var(--indigo-light);color:var(--indigo-light)}
+.qpill.active{background:var(--indigo-light);color:#fff;border-color:var(--indigo-light)}
+.q-prog-badge{
+  margin-left:auto;font-size:11px;font-family:'Space Mono',monospace;
+  color:var(--indigo-light);background:var(--indigo-glow);
+  padding:4px 12px;border-radius:20px;border:1px solid var(--border-hi);
+}
+.qtopic-grp{margin-bottom:30px}
+.qtopic-hdr{
+  font-size:11px;font-weight:700;color:var(--indigo-light);
+  text-transform:uppercase;letter-spacing:.06em;
+  padding:8px 0 8px 12px;border-left:2px solid var(--indigo-light);
+  margin-bottom:12px;font-family:'Space Mono',monospace;
+}
+.q-card{
+  background:var(--navy-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px 20px;margin-bottom:10px;
+  transition:border-color .15s;
+}
+.q-card:hover{border-color:rgba(255,255,255,.13)}
+.q-card.mk-ok{border-left:3px solid var(--green)}
+.q-card.mk-no{border-left:3px solid var(--red)}
+.q-card.mk-sk{border-left:3px solid var(--amber)}
+.q-top{display:flex;align-items:flex-start;gap:12px}
+.q-id{
+  font-family:'Space Mono',monospace;font-size:10px;font-weight:700;
+  color:var(--text-dim);background:var(--navy-lite);
+  padding:3px 8px;border-radius:5px;flex-shrink:0;margin-top:1px;
+}
+.q-body{flex:1}
+.dbadge{
+  display:inline-block;font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;
+  padding:2px 8px;border-radius:10px;margin-bottom:7px;
+  font-family:'Space Mono',monospace;
+}
+.df{background:rgba(234,179,8,.15);color:#EAB308}
+.ds{background:rgba(79,70,229,.15);color:#818CF8}
+.dx{background:rgba(14,165,233,.15);color:#38BDF8}
+.q-text{font-size:14px;color:var(--text);line-height:1.65;margin-bottom:13px;font-weight:400}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:9px 13px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);cursor:pointer;font-size:13px;
+  color:var(--text-mid);background:var(--navy-mid);
+  text-align:left;width:100%;line-height:1.5;
+  font-family:'Outfit',sans-serif;transition:all .13s;
+}
+.opt:hover{border-color:var(--indigo-light);color:var(--text);background:var(--indigo-glow2)}
+.opt.sel{border-color:var(--indigo-light);background:var(--indigo-glow);color:#C7D2FE}
+.opt.sel .ol{background:var(--indigo-light);color:#fff}
+.ol{
+  font-family:'Space Mono',monospace;font-size:11px;font-weight:700;
+  min-width:20px;height:20px;border-radius:50%;
+  background:var(--navy-lite);color:var(--text-dim);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;transition:all .13s;
+}
+/* marked */
+.opt-m{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:9px 13px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-size:13px;
+  color:var(--text-dim);background:var(--navy-mid);line-height:1.5;
+}
+.opt-m.mc{border-color:rgba(34,197,94,.4);background:var(--green-bg);color:#86EFAC}
+.opt-m.mc .ol{background:var(--green);color:#fff}
+.opt-m.mw{border-color:rgba(239,68,68,.4);background:var(--red-bg);color:#FCA5A5}
+.opt-m.mw .ol{background:var(--red);color:#fff}
+.osuf{
+  margin-left:auto;font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:8px;flex-shrink:0;align-self:center;
+  font-family:'Space Mono',monospace;
+}
+.sc{background:var(--green);color:#fff}
+.sw{background:var(--red);color:#fff}
+.exp-box{
+  margin-top:10px;padding:10px 14px;
+  background:var(--green-bg);border-left:2px solid var(--green);
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+  font-size:12px;color:#86EFAC;line-height:1.6;
+}
+.exp-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.6;margin-bottom:3px;font-family:'Space Mono',monospace}
+.rev-box{
+  margin-top:6px;padding:8px 12px;
+  background:var(--amber-bg);border-left:2px solid var(--amber);
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+  font-size:12px;color:#FDE68A;line-height:1.5;
+}
+.skip-box{
+  margin-top:10px;padding:9px 13px;
+  background:var(--amber-bg);border-left:2px solid var(--amber);
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+  font-size:12px;color:#FDE68A;
+}
+
+/* ── SCORE TAB ── */
+.score-hero{
+  background:linear-gradient(135deg,var(--navy-mid),var(--navy-lite));
+  border:1px solid var(--border-hi);border-radius:var(--radius);
+  padding:28px;margin-bottom:22px;text-align:center;
+}
+.score-ring{
+  width:120px;height:120px;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  margin:0 auto 16px;border:3px solid var(--indigo-light);
+  box-shadow:0 0 40px var(--indigo-glow);
+}
+.score-pct{font-size:34px;font-weight:700;font-family:'Space Mono',monospace;color:var(--indigo-light)}
+.score-lbl{font-size:11px;color:var(--text-mid);text-transform:uppercase;letter-spacing:.05em}
+.score-band{display:inline-block;font-size:13px;font-weight:700;padding:6px 18px;border-radius:20px;margin-bottom:12px}
+.score-msg{font-size:13px;color:var(--text-mid);line-height:1.65;max-width:560px;margin:0 auto}
+.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.score-stat{
+  background:var(--navy-card);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:14px;text-align:center;
+}
+.ssval{font-size:26px;font-weight:700;font-family:'Space Mono',monospace}
+.sslbl{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
+.bc-card{
+  background:var(--navy-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;margin-bottom:18px;
+}
+.bc-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px}
+.rag-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.rag-row:last-child{border-bottom:none}
+.rdot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.rg{background:var(--green)}.ra{background:var(--amber)}.rr{background:var(--red)}
+.rname{font-size:13px;color:var(--text);flex:1}
+.rbar{width:80px;height:5px;background:var(--navy-lite);border-radius:3px;overflow:hidden}
+.rbarfill{height:100%;border-radius:3px}
+.rscore{font-size:11px;font-family:'Space Mono',monospace;color:var(--text-mid)}
+.rev-card{
+  background:var(--red-bg);border:1px solid rgba(239,68,68,.25);
+  border-radius:var(--radius);padding:20px;margin-bottom:18px;
+}
+.rv-title{font-size:14px;font-weight:700;color:var(--red);margin-bottom:12px}
+.rv-item{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:8px 0;border-bottom:1px solid rgba(239,68,68,.15);
+  font-size:13px;color:#FCA5A5;line-height:1.5;
+}
+.rv-item:last-child{border-bottom:none}
+.rv-arr{color:var(--red);font-weight:700;flex-shrink:0;margin-top:1px}
+.pts-card{
+  background:var(--amber-bg);border:1px solid rgba(234,179,8,.25);
+  border-radius:var(--radius);padding:20px;margin-bottom:18px;
+}
+.pts-title{font-size:14px;font-weight:700;color:var(--amber);margin-bottom:12px}
+.pt-item{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:7px 0;border-bottom:1px solid rgba(234,179,8,.15);
+  font-size:13px;color:#FDE68A;line-height:1.5;
+}
+.pt-item:last-child{border-bottom:none}
+.pt-bul{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--amber);color:var(--navy);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;
+  font-family:'Space Mono',monospace;
+}
+
+/* ── BUTTONS ── */
+.btn{padding:10px 22px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'Outfit',sans-serif;transition:all .15s}
+.btn-indigo{background:var(--indigo-light);color:#fff}
+.btn-indigo:hover{background:var(--indigo);box-shadow:0 0 20px var(--indigo-glow)}
+.btn-ghost{background:transparent;color:var(--text-mid);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--indigo-light);color:var(--indigo-light)}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+
+@media(max-width:580px){
+  .know-grid{grid-template-columns:1fr}
+  .score-grid{grid-template-columns:repeat(2,1fr)}
+  .header{padding:14px 14px 0}
+  .shell{padding:18px 10px 60px}
+  .tab{padding:9px 12px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">⚛️</div>
+      <div class="logo-text">
+        <h1>GL PTS Physics — KS3</h1>
+        <p>Al Yasmina Academy · Year 7–9 · National Curriculum aligned</p>
+      </div>
+    </div>
+    <div class="header-meta" id="prog-badge">0 / 50 answered</div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('knowledge',this)">📖 Knowledge <span class="tab-num">8 topics</span></button>
+    <button class="tab" onclick="switchTab('summary',this)">✅ Self Summary <span class="tab-num" id="cl-badge">0%</span></button>
+    <button class="tab" onclick="switchTab('questions',this)">📝 Practice Questions <span class="tab-num">50 Qs</span></button>
+    <button class="tab" onclick="switchTab('marking',this)">🔍 Self Mark <span class="tab-num" id="mk-badge">0</span></button>
+    <button class="tab" onclick="switchTab('score',this)">🏆 Score &amp; Revise <span class="tab-num" id="sc-badge">—</span></button>
+  </div>
+</div>
+
+<div class="shell">
+
+<!-- TAB 1: KNOWLEDGE -->
+<div class="pane active" id="pane-knowledge">
+<div class="section-lbl">KS3 Physics — Core Knowledge</div>
+
+<div class="topic-block">
+  <div class="topic-hdr"><div class="topic-icon">⚡</div><div class="topic-hdr-text"><h3>Energy</h3><p>Energy stores, transfers, calculations, domestic fuel use</p></div></div>
+  <div class="know-grid">
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Energy stores and transfers</div><div class="kc-body">Energy can be stored as: kinetic, gravitational potential, elastic potential, thermal, chemical, nuclear, electromagnetic. Energy is transferred by: heating, work done by forces, electrical work, radiation. Energy is always conserved — it cannot be created or destroyed.</div></div>
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Key energy equations</div><div class="kc-body"><span class="formula">P = E ÷ t</span> Power (W) = Energy (J) ÷ time (s)<br><span class="formula">E = P × t</span> Energy = Power × time<br><span class="formula">1 kWh = 3,600,000 J</span><br>Cost = power (kW) × time (h) × price per kWh</div></div>
+    <div class="know-card"><span class="kc-tag tag-should">Should know</span><div class="kc-title">Conduction, convection, radiation</div><div class="kc-body">Heat transfers from hot to cold. Conduction — through solids via particle vibration. Convection — through fluids via density differences (hot rises). Radiation — electromagnetic waves (infrared), no medium needed. Insulators reduce heat transfer.</div></div>
+    <div class="know-card"><span class="kc-tag tag-could">Stretch</span><div class="kc-title">Simple machines</div><div class="kc-body">A machine can increase force but reduces the distance moved — the product (force × distance = work done) stays the same. A lever, pulley or ramp trades distance for force. Work done = force × distance.</div></div>
+  </div>
+</div>
+
+<div class="topic-block">
+  <div class="topic-hdr"><div class="topic-icon">🏃</div><div class="topic-hdr-text"><h3>Motion and Forces</h3><p>Speed, distance-time graphs, forces, pressure, Hooke's Law</p></div></div>
+  <div class="know-grid">
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Speed equation</div><div class="kc-body"><span class="formula">speed = distance ÷ time</span><br>Units: m/s or km/h. Average speed = total distance ÷ total time. On a distance-time graph: gradient = speed, horizontal line = stationary, steeper line = faster.</div></div>
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Forces — balanced and unbalanced</div><div class="kc-body">Forces are pushes or pulls, measured in newtons (N). Balanced forces → no change in motion. Unbalanced forces → acceleration or deceleration. Resultant force = sum of all forces in one direction (considering direction).</div></div>
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Hooke's Law</div><div class="kc-body"><span class="formula">F = k × e</span> Force (N) = spring constant × extension (m). Within the elastic limit, extension is directly proportional to force. Beyond the elastic limit, the spring is permanently deformed.</div></div>
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Pressure</div><div class="kc-body"><span class="formula">P = F ÷ A</span> Pressure (Pa) = Force (N) ÷ Area (m²). Pressure in liquids increases with depth. Atmospheric pressure decreases with altitude. Upthrust acts upward on objects in fluids.</div></div>
+    <div class="know-card"><span class="kc-tag tag-should">Should know</span><div class="kc-title">Non-contact forces</div><div class="kc-body">Gravity, magnetism and static electricity all act at a distance without contact. Gravity always attracts. Magnets: like poles repel, unlike poles attract. Charged objects: like charges repel, unlike charges attract.</div></div>
+    <div class="know-card"><span class="kc-tag tag-could">Stretch</span><div class="kc-title">Moments</div><div class="kc-body"><span class="formula">Moment = Force × perpendicular distance</span> (Nm). For a balanced lever: sum of clockwise moments = sum of anticlockwise moments. A longer lever arm gives a greater turning effect.</div></div>
+  </div>
+</div>
+
+<div class="topic-block">
+  <div class="topic-hdr"><div class="topic-icon">🌊</div><div class="topic-hdr-text"><h3>Waves</h3><p>Sound waves, light waves, reflection, refraction, EM spectrum</p></div></div>
+  <div class="know-grid">
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Wave properties</div><div class="kc-body">All waves transfer energy without transferring matter. <b>Transverse waves</b>: vibration perpendicular to direction of travel (light, water). <b>Longitudinal waves</b>: vibration parallel to direction of travel (sound). Key terms: amplitude, wavelength, frequency, wave speed.</div></div>
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Sound waves</div><div class="kc-body">Sound requires a medium to travel — it cannot travel through a vacuum. Speed of sound in air ≈ 340 m/s (faster in solids and liquids). Frequency measured in Hz. Humans hear 20–20,000 Hz. Echoes are reflections of sound.</div></div>
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Light waves</div><div class="kc-body">Light travels as a transverse electromagnetic wave at 3×10⁸ m/s in a vacuum. Reflection: angle of incidence = angle of reflection. Refraction: light bends when it changes speed (e.g. glass). White light splits into a spectrum through a prism.</div></div>
+    <div class="know-card"><span class="kc-tag tag-should">Should know</span><div class="kc-title">Ray model of light</div><div class="kc-body">Used to explain mirrors (plane and curved), the pinhole camera, refraction, and convex lenses. A convex lens converges (focuses) light. The retina detects light in the human eye. Cameras use a similar focusing mechanism.</div></div>
+  </div>
+</div>
+
+<div class="topic-block">
+  <div class="topic-hdr"><div class="topic-icon">🔌</div><div class="topic-hdr-text"><h3>Electricity and Electromagnetism</h3><p>Circuits, current, resistance, static electricity, magnetism</p></div></div>
+  <div class="know-grid">
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Current, voltage and resistance</div><div class="kc-body"><span class="formula">V = I × R</span> Voltage (V) = Current (A) × Resistance (Ω). Current measured in amperes (A). Potential difference (voltage) measured in volts (V). Resistance measured in ohms (Ω).</div></div>
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Series and parallel circuits</div><div class="kc-body"><b>Series</b>: same current throughout, voltages add up, one break stops all. <b>Parallel</b>: current splits, same voltage across each branch, components work independently. Adding bulbs in parallel → each is brighter than in series.</div></div>
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Magnetism</div><div class="kc-body">Magnetic poles: N and S. Like poles repel, unlike poles attract. Magnetic field lines go from N to S outside the magnet. Earth has a magnetic field — compasses align with it. A current-carrying wire creates a magnetic field around it.</div></div>
+    <div class="know-card"><span class="kc-tag tag-should">Should know</span><div class="kc-title">Static electricity</div><div class="kc-body">When objects are rubbed, electrons are transferred, leaving one positively charged and one negatively charged. Like charges repel; unlike charges attract. The electric field exerts force on charged objects without contact.</div></div>
+  </div>
+</div>
+
+<div class="topic-block">
+  <div class="topic-hdr"><div class="topic-icon">🧊</div><div class="topic-hdr-text"><h3>Matter</h3><p>States of matter, particle model, density, Brownian motion, diffusion</p></div></div>
+  <div class="know-grid">
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Particle model of matter</div><div class="kc-body">Solid: particles in fixed positions, vibrate only. Liquid: particles close but can flow. Gas: particles far apart, move fast and randomly. Changes of state involve changes in particle arrangement and energy — no new substance formed.</div></div>
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Density</div><div class="kc-body"><span class="formula">ρ = m ÷ V</span> Density (kg/m³) = mass (kg) ÷ volume (m³). Solids are generally denser than liquids, which are denser than gases. Ice is less dense than water — an important anomaly. Objects float if less dense than the fluid.</div></div>
+    <div class="know-card"><span class="kc-tag tag-should">Should know</span><div class="kc-title">Brownian motion and diffusion</div><div class="kc-body">Brownian motion: random movement of particles in a fluid due to collisions with surrounding molecules — evidence for the particle model. Diffusion: spreading of particles from high to low concentration. Faster at higher temperatures.</div></div>
+    <div class="know-card"><span class="kc-tag tag-could">Stretch</span><div class="kc-title">Internal energy</div><div class="kc-body">Internal energy = kinetic energy + potential energy of all particles. Heating a substance increases particle kinetic energy (temperature rises) or does work to separate particles during a change of state (temperature constant).</div></div>
+  </div>
+</div>
+
+<div class="topic-block">
+  <div class="topic-hdr"><div class="topic-icon">🌌</div><div class="topic-hdr-text"><h3>Space Physics</h3><p>Gravity, weight, orbits, the Solar System, stars, seasons</p></div></div>
+  <div class="know-grid">
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Weight and gravity</div><div class="kc-body"><span class="formula">W = m × g</span> Weight (N) = mass (kg) × gravitational field strength (N/kg). On Earth g = 10 N/kg. Mass is constant everywhere; weight changes with gravitational field strength. The Moon has a lower g than Earth.</div></div>
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">The Solar System and beyond</div><div class="kc-body">Our Sun is a star. Planets orbit the Sun in ellipses, held by gravity. Our galaxy is the Milky Way — it contains billions of stars. There are billions of galaxies in the universe. Distance in space measured in light-years (distance light travels in one year).</div></div>
+    <div class="know-card"><span class="kc-tag tag-must">Must know</span><div class="kc-title">Seasons and day length</div><div class="kc-body">Earth is tilted on its axis at ~23.5°. As Earth orbits the Sun, the tilt causes seasons — when the Northern Hemisphere tilts toward the Sun, it is summer there. Day length is longer in summer (more hours of daylight).</div></div>
+    <div class="know-card"><span class="kc-tag tag-should">Should know</span><div class="kc-title">Gravity in space</div><div class="kc-body">Gravity acts between all objects with mass. The Moon orbits Earth due to Earth's gravity. Earth orbits the Sun due to the Sun's gravity. Gravity decreases with distance. Stars and planets form when gravity causes gas and dust to collapse inward.</div></div>
+  </div>
+</div>
+
+</div><!-- end knowledge -->
+
+<!-- TAB 2: SELF SUMMARY -->
+<div class="pane" id="pane-summary">
+<div class="summary-intro">
+  <h2>Self-assessment checklist</h2>
+  <p>Tick each statement when you feel confident. Use this before attempting practice questions to identify your gaps. Aim to tick every statement before the GL PTS test.</p>
+</div>
+<div class="cl-progress">
+  <div class="cl-stat"><div class="cl-val" id="cl-done">0</div><div class="cl-lbl">Ticked</div></div>
+  <div class="cl-stat"><div class="cl-val" id="cl-total">0</div><div class="cl-lbl">Total</div></div>
+  <div class="cl-bar-wrap">
+    <div class="cl-bar-label"><span>Confidence</span><span id="cl-pct">0%</span></div>
+    <div class="cl-track"><div class="cl-fill" id="cl-fill" style="width:0%"></div></div>
+  </div>
+</div>
+<div id="checklist-container"></div>
+</div>
+
+<!-- TAB 3: QUESTIONS -->
+<div class="pane" id="pane-questions">
+<div class="q-filter">
+  <span class="qfl">Topic:</span>
+  <button class="qpill active" onclick="filterQ('all',this)">All</button>
+  <button class="qpill" onclick="filterQ('energy',this)">Energy</button>
+  <button class="qpill" onclick="filterQ('motion',this)">Motion &amp; Forces</button>
+  <button class="qpill" onclick="filterQ('waves',this)">Waves</button>
+  <button class="qpill" onclick="filterQ('electricity',this)">Electricity</button>
+  <button class="qpill" onclick="filterQ('matter',this)">Matter</button>
+  <button class="qpill" onclick="filterQ('space',this)">Space</button>
+  <span class="q-prog-badge" id="q-prog">0 / 50</span>
+</div>
+<div id="questions-container"></div>
+</div>
+
+<!-- TAB 4: SELF MARK -->
+<div class="pane" id="pane-marking">
+<div id="marking-container"></div>
+</div>
+
+<!-- TAB 5: SCORE & REVISE -->
+<div class="pane" id="pane-score">
+<div id="score-container"></div>
+</div>
+
+</div><!-- shell -->
+
+<script>
+const TOPICS_Q=[
+  {id:'energy',     label:'Energy',               icon:'⚡'},
+  {id:'motion',     label:'Motion & Forces',       icon:'🏃'},
+  {id:'waves',      label:'Waves',                 icon:'🌊'},
+  {id:'electricity',label:'Electricity & Magnetism',icon:'🔌'},
+  {id:'matter',     label:'Matter',                icon:'🧊'},
+  {id:'space',      label:'Space Physics',         icon:'🌌'},
+];
+
+const QS=[
+// ── ENERGY ─────────────────────────────────────────────────────────
+{id:'P001',topic:'energy',diff:'Foundation',
+ q:'Which of the following is a store of energy?',
+ opts:['Sound','A stretched spring','A shadow','A mirror'],ans:1,
+ exp:'A stretched spring stores elastic potential energy. Sound and shadows are not energy stores — they are processes or phenomena.',
+ rev:'Revise: energy stores — kinetic, gravitational potential, elastic, thermal, chemical'},
+{id:'P002',topic:'energy',diff:'Foundation',
+ q:'What is the unit of energy?',
+ opts:['Watt','Newton','Joule','Ampere'],ans:2,
+ exp:'Energy is measured in joules (J). Power is measured in watts (W). Force is measured in newtons (N).',
+ rev:'Revise: units of energy and power'},
+{id:'P003',topic:'energy',diff:'Standard',
+ q:'A 2 kW heater is used for 3 hours. How much energy does it transfer?',
+ opts:['6 J','6 kJ','6 kWh','0.67 kWh'],ans:2,
+ exp:'Energy = power × time = 2 kW × 3 h = 6 kWh. The kilowatt-hour is the unit used for electricity bills.',
+ rev:'Revise: calculating energy use in kWh'},
+{id:'P004',topic:'energy',diff:'Standard',
+ q:'Heat energy always transfers from:',
+ opts:['Cold objects to hot objects','Hot objects to cold objects','Objects of equal temperature','High pressure to low pressure'],ans:1,
+ exp:'Thermal energy always flows from a region of higher temperature to lower temperature until thermal equilibrium is reached.',
+ rev:'Revise: direction of thermal energy transfer and thermal equilibrium'},
+{id:'P005',topic:'energy',diff:'Standard',
+ q:'Which process transfers thermal energy through a solid without the material moving?',
+ opts:['Convection','Radiation','Conduction','Evaporation'],ans:2,
+ exp:'Conduction transfers heat through solids via vibrating particles passing energy to neighbouring particles — the material itself does not move.',
+ rev:'Revise: conduction, convection and radiation — how each works'},
+{id:'P006',topic:'energy',diff:'Standard',
+ q:'A light bulb has a power rating of 60 W. What does this mean?',
+ opts:['It uses 60 J of energy in total','It transfers 60 J of energy every second','It produces 60 N of force','It runs on 60 V'],ans:1,
+ exp:'Power (in watts) means joules per second. A 60 W bulb transfers 60 J of energy every second.',
+ rev:'Revise: the meaning of power in watts'},
+{id:'P007',topic:'energy',diff:'Stretch',
+ q:'A simple machine increases the force applied to an object. What must be true?',
+ opts:['Work done increases','The object moves a greater distance','The object moves a smaller distance','Energy is created by the machine'],ans:2,
+ exp:'Simple machines cannot increase energy output. If force is increased, the distance moved must decrease to keep work done (force × distance) the same.',
+ rev:'Revise: simple machines and the conservation of work done'},
+{id:'P008',topic:'energy',diff:'Stretch',
+ q:'A ball is dropped from rest. As it falls and before it hits the ground, which energy transfer occurs?',
+ opts:['Kinetic → gravitational potential','Thermal → kinetic','Gravitational potential → kinetic','Chemical → thermal'],ans:2,
+ exp:'As the ball falls, its height decreases (losing gravitational potential energy) and its speed increases (gaining kinetic energy).',
+ rev:'Revise: energy transfers during free fall'},
+
+// ── MOTION & FORCES ────────────────────────────────────────────────
+{id:'P009',topic:'motion',diff:'Foundation',
+ q:'A car travels 120 m in 10 s. What is its average speed?',
+ opts:['1200 m/s','12 m/s','0.08 m/s','12 km/h'],ans:1,
+ exp:'Speed = distance ÷ time = 120 ÷ 10 = 12 m/s.',
+ rev:'Revise: the speed equation — speed = distance ÷ time'},
+{id:'P010',topic:'motion',diff:'Foundation',
+ q:'On a distance-time graph, what does a horizontal (flat) line represent?',
+ opts:['Constant speed','Accelerating','Decelerating','Stationary'],ans:3,
+ exp:'A horizontal line means the distance is not changing with time — the object is stationary (not moving).',
+ rev:'Revise: interpreting distance-time graphs'},
+{id:'P011',topic:'motion',diff:'Standard',
+ q:'A 5 N force and a 3 N force act in opposite directions on an object. What is the resultant force?',
+ opts:['8 N','2 N','15 N','0 N'],ans:1,
+ exp:'Resultant force = 5 - 3 = 2 N in the direction of the larger force.',
+ rev:'Revise: adding forces in one dimension — resultant force'},
+{id:'P012',topic:'motion',diff:'Standard',
+ q:'Hooke\'s Law states that the extension of a spring is:',
+ opts:['Inversely proportional to the force applied','Directly proportional to the force applied (within the elastic limit)','Equal to the force applied','Independent of the force applied'],ans:1,
+ exp:'Hooke\'s Law: F = k × e. Extension is directly proportional to force — double the force, double the extension — but only within the elastic limit.',
+ rev:'Revise: Hooke\'s Law and the elastic limit'},
+{id:'P013',topic:'motion',diff:'Standard',
+ q:'Pressure is calculated as:',
+ opts:['Force × Area','Force ÷ Area','Area ÷ Force','Force + Area'],ans:1,
+ exp:'Pressure (Pa) = Force (N) ÷ Area (m²). A smaller area produces greater pressure for the same force — this is why sharp knife edges cut more easily.',
+ rev:'Revise: the pressure equation P = F ÷ A'},
+{id:'P014',topic:'motion',diff:'Standard',
+ q:'Which of the following is a non-contact force?',
+ opts:['Friction','Tension','Gravity','Air resistance'],ans:2,
+ exp:'Gravity acts at a distance without objects touching. Friction, tension and air resistance all require contact or direct interaction.',
+ rev:'Revise: contact forces vs non-contact forces'},
+{id:'P015',topic:'motion',diff:'Standard',
+ q:'A skydiver reaches terminal velocity. What can we say about the forces on them?',
+ opts:['Weight is greater than air resistance','Air resistance is greater than weight','Weight equals air resistance — forces are balanced','There are no forces acting'],ans:2,
+ exp:'At terminal velocity, the skydiver moves at constant speed — balanced forces. Weight downward = air resistance upward.',
+ rev:'Revise: terminal velocity and balanced forces'},
+{id:'P016',topic:'motion',diff:'Stretch',
+ q:'A 10 N force is applied 0.5 m from a pivot. What is the moment?',
+ opts:['20 Nm','5 Nm','10 Nm','0.5 Nm'],ans:1,
+ exp:'Moment = Force × perpendicular distance = 10 N × 0.5 m = 5 Nm.',
+ rev:'Revise: calculating moments — Moment = Force × distance'},
+{id:'P017',topic:'motion',diff:'Stretch',
+ q:'Water pressure at the bottom of a swimming pool is greater than at the surface. Why?',
+ opts:['The water is warmer at the bottom','There is a greater weight of water above pressing down','The pool walls push water inward','The water molecules are larger at depth'],ans:1,
+ exp:'Pressure in a liquid increases with depth because the weight of the fluid above increases — more liquid above means more weight pressing down.',
+ rev:'Revise: pressure in liquids increases with depth'},
+
+// ── WAVES ──────────────────────────────────────────────────────────
+{id:'P018',topic:'waves',diff:'Foundation',
+ q:'What type of wave is sound?',
+ opts:['Transverse','Electromagnetic','Longitudinal','Mechanical transverse'],ans:2,
+ exp:'Sound is a longitudinal wave — particles vibrate parallel to the direction the wave travels, creating compressions and rarefactions.',
+ rev:'Revise: longitudinal vs transverse waves'},
+{id:'P019',topic:'waves',diff:'Foundation',
+ q:'Can sound travel through a vacuum?',
+ opts:['Yes — at 340 m/s','Yes — but slower than in air','No — sound needs a medium to travel','Yes — faster than in air'],ans:2,
+ exp:'Sound requires particles to vibrate and pass energy on. A vacuum has no particles, so sound cannot travel through it.',
+ rev:'Revise: sound needs a medium — it cannot travel through a vacuum'},
+{id:'P020',topic:'waves',diff:'Standard',
+ q:'A ray of light hits a mirror. The angle of incidence is 30°. What is the angle of reflection?',
+ opts:['60°','15°','30°','90°'],ans:2,
+ exp:'The law of reflection: angle of incidence = angle of reflection. Both angles are measured from the normal to the surface.',
+ rev:'Revise: the law of reflection — angle of incidence = angle of reflection'},
+{id:'P021',topic:'waves',diff:'Standard',
+ q:'What happens to light when it passes from air into glass?',
+ opts:['It speeds up and bends away from the normal','It slows down and bends toward the normal','It speeds up and bends toward the normal','It maintains the same speed and direction'],ans:1,
+ exp:'Glass is optically denser than air. Light slows down on entering glass and bends toward the normal — this is refraction.',
+ rev:'Revise: refraction — what happens when light changes medium'},
+{id:'P022',topic:'waves',diff:'Standard',
+ q:'Which of the following travels fastest?',
+ opts:['Sound in air','Sound in water','Light in air','Sound in steel'],ans:2,
+ exp:'Light travels at approximately 3×10⁸ m/s — far faster than sound in any medium. Sound in steel (~5,000 m/s) is faster than sound in air (~340 m/s).',
+ rev:'Revise: speed of light vs speed of sound'},
+{id:'P023',topic:'waves',diff:'Standard',
+ q:'A sound wave has a frequency of 440 Hz. What does this mean?',
+ opts:['The wave travels 440 m per second','440 complete wave cycles occur per second','The wavelength is 440 m','The amplitude is 440 units'],ans:1,
+ exp:'Frequency (Hz) = number of complete wave cycles per second. 440 Hz means 440 complete oscillations every second (the musical note A).',
+ rev:'Revise: frequency measured in hertz (Hz)'},
+{id:'P024',topic:'waves',diff:'Stretch',
+ q:'White light is passed through a glass prism and splits into a spectrum. Why?',
+ opts:['Different colours have different amplitudes','Different colours travel at different speeds in glass and refract by different amounts','The prism reflects different colours at different angles','White light contains no colours'],ans:1,
+ exp:'Different colours (frequencies) of light travel at slightly different speeds in glass, so they refract by different amounts — splitting white light into its component colours.',
+ rev:'Revise: dispersion of white light — why a prism splits white light'},
+{id:'P025',topic:'waves',diff:'Stretch',
+ q:'Ultrasound is used for medical imaging. Which property of waves makes this possible?',
+ opts:['Ultrasound is visible','Ultrasound reflects off boundaries between different tissues','Ultrasound travels faster than light','Ultrasound carries electric charge'],ans:1,
+ exp:'Ultrasound reflects off boundaries between different materials (e.g. soft tissue and bone). The reflected waves are detected and used to build an image.',
+ rev:'Revise: reflection of ultrasound and its medical uses'},
+
+// ── ELECTRICITY ────────────────────────────────────────────────────
+{id:'P026',topic:'electricity',diff:'Foundation',
+ q:'What is electric current measured in?',
+ opts:['Volts','Ohms','Amperes','Watts'],ans:2,
+ exp:'Electric current is measured in amperes (A). Voltage is in volts (V). Resistance is in ohms (Ω). Power is in watts (W).',
+ rev:'Revise: units — current (A), voltage (V), resistance (Ω)'},
+{id:'P027',topic:'electricity',diff:'Foundation',
+ q:'In a series circuit with two bulbs, one bulb blows. What happens to the other?',
+ opts:['It gets brighter','It stays on','It goes out too','It flickers'],ans:2,
+ exp:'In a series circuit there is only one path for current. If one component breaks the circuit, current stops flowing and all components go off.',
+ rev:'Revise: series circuits — one path for current'},
+{id:'P028',topic:'electricity',diff:'Standard',
+ q:'A component has a voltage of 12 V across it and a current of 3 A through it. What is its resistance?',
+ opts:['36 Ω','4 Ω','0.25 Ω','15 Ω'],ans:1,
+ exp:'R = V ÷ I = 12 ÷ 3 = 4 Ω. Using Ohm\'s Law: V = I × R, rearranged to R = V ÷ I.',
+ rev:'Revise: Ohm\'s Law V = IR — rearranging to find R'},
+{id:'P029',topic:'electricity',diff:'Standard',
+ q:'Two bulbs are connected in parallel. Compared to series, each bulb is:',
+ opts:['Dimmer','The same brightness','Brighter','Off'],ans:2,
+ exp:'In parallel, each bulb gets the full battery voltage. In series, the voltage is shared. So parallel bulbs are brighter.',
+ rev:'Revise: parallel vs series circuits — voltage and brightness'},
+{id:'P030',topic:'electricity',diff:'Standard',
+ q:'What happens when two north poles of magnets are brought together?',
+ opts:['They attract','They repel','One becomes south','Nothing happens'],ans:1,
+ exp:'Like poles repel. Two north poles brought together will push each other away. Unlike poles (N and S) attract.',
+ rev:'Revise: magnetic poles — like poles repel, unlike poles attract'},
+{id:'P031',topic:'electricity',diff:'Standard',
+ q:'When a plastic rod is rubbed with a cloth, the rod becomes negatively charged. Why?',
+ opts:['Protons move from cloth to rod','Electrons move from cloth to rod','Neutrons move from rod to cloth','Protons move from rod to cloth'],ans:1,
+ exp:'Only electrons can move. Rubbing transfers electrons from the cloth to the rod, giving the rod extra negative charge and leaving the cloth positively charged.',
+ rev:'Revise: static electricity — electron transfer when objects are rubbed'},
+{id:'P032',topic:'electricity',diff:'Stretch',
+ q:'A wire carries a current. A compass placed near the wire deflects. Why?',
+ opts:['The wire heats the compass','A current-carrying wire creates a magnetic field around it','The wire becomes statically charged','The compass is broken'],ans:1,
+ exp:'A moving electric current creates a magnetic field (discovered by Oersted). The compass needle aligns with this field, causing it to deflect.',
+ rev:'Revise: the magnetic effect of an electric current — electromagnets'},
+{id:'P033',topic:'electricity',diff:'Stretch',
+ q:'Which component would you use to measure current in a circuit?',
+ opts:['Voltmeter in parallel','Ammeter in series','Voltmeter in series','Ammeter in parallel'],ans:1,
+ exp:'An ammeter measures current and must be placed in series (in line with the circuit). A voltmeter measures voltage and is placed in parallel.',
+ rev:'Revise: ammeters in series, voltmeters in parallel'},
+
+// ── MATTER ─────────────────────────────────────────────────────────
+{id:'P034',topic:'matter',diff:'Foundation',
+ q:'In which state of matter are particles furthest apart?',
+ opts:['Solid','Liquid','Gas','Plasma'],ans:2,
+ exp:'In a gas, particles are far apart and move rapidly and randomly. This is why gases have no fixed shape or volume.',
+ rev:'Revise: particle arrangement in solids, liquids and gases'},
+{id:'P035',topic:'matter',diff:'Foundation',
+ q:'What is the term for the change of state from liquid to gas?',
+ opts:['Melting','Freezing','Evaporation','Condensation'],ans:2,
+ exp:'Evaporation (or boiling) is when a liquid changes to a gas. Condensation is the reverse (gas to liquid).',
+ rev:'Revise: names of the changes of state'},
+{id:'P036',topic:'matter',diff:'Standard',
+ q:'A piece of iron has a mass of 790 g and a volume of 100 cm³. What is its density?',
+ opts:['0.13 g/cm³','7.9 g/cm³','790 g/cm³','79 g/cm³'],ans:1,
+ exp:'Density = mass ÷ volume = 790 ÷ 100 = 7.9 g/cm³. Iron is much denser than water (1 g/cm³), so iron sinks.',
+ rev:'Revise: density = mass ÷ volume'},
+{id:'P037',topic:'matter',diff:'Standard',
+ q:'Why does ice float on water?',
+ opts:['Ice is heavier than water','Ice is less dense than liquid water','Water repels ice','Ice has no mass'],ans:1,
+ exp:'Ice is less dense than liquid water — water expands as it freezes. This anomaly means ice floats, which is important for aquatic life in cold climates.',
+ rev:'Revise: ice-water density anomaly — why ice floats'},
+{id:'P038',topic:'matter',diff:'Standard',
+ q:'Brownian motion is evidence for:',
+ opts:['Light traveling in straight lines','The wave nature of sound','The particle nature of matter','Electric fields'],ans:2,
+ exp:'Brownian motion — the random movement of pollen grains in water — is caused by continuous collisions with invisible water molecules, providing evidence that matter is made of particles.',
+ rev:'Revise: Brownian motion as evidence for the particle model'},
+{id:'P039',topic:'matter',diff:'Standard',
+ q:'During a change of state, the temperature of a substance:',
+ opts:['Increases steadily','Decreases steadily','Remains constant','Doubles'],ans:2,
+ exp:'During a change of state, energy input is used to change the arrangement of particles (potential energy), not to increase kinetic energy — so temperature stays constant.',
+ rev:'Revise: why temperature is constant during a change of state'},
+{id:'P040',topic:'matter',diff:'Stretch',
+ q:'A gas is compressed into a smaller volume at constant temperature. What happens to its pressure?',
+ opts:['Pressure decreases','Pressure stays the same','Pressure increases','Temperature increases'],ans:2,
+ exp:'Compressing a gas into a smaller volume means particles collide with the walls more frequently — pressure increases. (Boyle\'s Law: P × V = constant at fixed temperature.)',
+ rev:'Revise: gas pressure and volume relationship'},
+{id:'P041',topic:'matter',diff:'Stretch',
+ q:'Diffusion happens faster in gases than in liquids because:',
+ opts:['Gas particles are larger','Gas particles have more kinetic energy and are further apart, so they move more freely','Liquids have no particles','Gas particles are denser'],ans:1,
+ exp:'In gases, particles are far apart and move rapidly with little interaction. In liquids, particles are closer and have more interactions, slowing diffusion.',
+ rev:'Revise: diffusion in gases vs liquids — effect of particle spacing'},
+
+// ── SPACE ──────────────────────────────────────────────────────────
+{id:'P042',topic:'space',diff:'Foundation',
+ q:'What is the weight of a 5 kg object on Earth? (g = 10 N/kg)',
+ opts:['5 N','0.5 N','50 N','500 N'],ans:2,
+ exp:'Weight = mass × gravitational field strength = 5 × 10 = 50 N.',
+ rev:'Revise: W = m × g — calculating weight'},
+{id:'P043',topic:'space',diff:'Foundation',
+ q:'What causes the seasons on Earth?',
+ opts:['Earth\'s changing distance from the Sun','The tilt of Earth\'s axis as it orbits the Sun','The Moon blocking sunlight','The Sun moving closer in summer'],ans:1,
+ exp:'Earth is tilted at ~23.5° on its axis. As Earth orbits the Sun, different hemispheres receive more direct sunlight at different times of year — causing seasons.',
+ rev:'Revise: Earth\'s axial tilt and the seasons'},
+{id:'P044',topic:'space',diff:'Standard',
+ q:'An astronaut has a mass of 80 kg on Earth. What is their mass on the Moon?',
+ opts:['About 13 kg','80 kg','About 480 kg','0 kg'],ans:1,
+ exp:'Mass is a measure of the amount of matter — it does not change with location. Only weight changes (because g is different). On the Moon, weight ≈ 80 × 1.6 = 128 N, but mass = 80 kg.',
+ rev:'Revise: difference between mass and weight'},
+{id:'P045',topic:'space',diff:'Standard',
+ q:'What is a light-year?',
+ opts:['The time it takes light to travel from the Sun to Earth','The distance light travels in one year','The mass of the Sun','The age of the universe'],ans:1,
+ exp:'A light-year is a unit of distance — approximately 9.46 × 10¹⁵ metres — the distance light travels in one year at 3×10⁸ m/s.',
+ rev:'Revise: the light-year as a unit of astronomical distance'},
+{id:'P046',topic:'space',diff:'Standard',
+ q:'Which force keeps planets in orbit around the Sun?',
+ opts:['Magnetism','Electrostatic force','Gravity','Normal force'],ans:2,
+ exp:'Gravity is the attractive force between all masses. The Sun\'s gravity acts on each planet, keeping it in orbit. The planet\'s speed prevents it from falling inward.',
+ rev:'Revise: gravity as the force keeping planets in orbit'},
+{id:'P047',topic:'space',diff:'Standard',
+ q:'Our Sun is best described as:',
+ opts:['A planet','A moon','A star','An asteroid'],ans:2,
+ exp:'The Sun is a star — a massive ball of hot gas that generates energy through nuclear fusion in its core. It is the centre of our Solar System.',
+ rev:'Revise: the Sun as a star; structure of the Solar System'},
+{id:'P048',topic:'space',diff:'Standard',
+ q:'In the Northern Hemisphere, why are days longer in summer than in winter?',
+ opts:['The Earth rotates faster in summer','The Earth is closer to the Sun','The Northern Hemisphere tilts toward the Sun, receiving more daylight hours','The Sun is bigger in summer'],ans:2,
+ exp:'When the Northern Hemisphere tilts toward the Sun, more of Earth\'s rotation occurs in daylight — giving longer days and shorter nights.',
+ rev:'Revise: day length and Earth\'s tilt — seasons'},
+{id:'P049',topic:'space',diff:'Stretch',
+ q:'A student weighs 600 N on Earth (g = 10 N/kg). What would they weigh on a planet where g = 4 N/kg?',
+ opts:['600 N','240 N','60 N','150 N'],ans:1,
+ exp:'First find mass: m = W ÷ g = 600 ÷ 10 = 60 kg. Then find weight on the new planet: W = 60 × 4 = 240 N.',
+ rev:'Revise: using W = mg to calculate weight on different planets'},
+{id:'P050',topic:'space',diff:'Stretch',
+ q:'Why does gravitational force between Earth and the Moon keep the Moon in orbit rather than pulling it straight in?',
+ opts:['The Moon is too light to be pulled','The Moon moves sideways fast enough that as it falls toward Earth, Earth curves away beneath it','The Moon has its own gravity that repels Earth','There is no gravitational force between Earth and Moon'],ans:1,
+ exp:'The Moon is moving sideways at high speed. Gravity pulls it inward, but its sideways motion means it keeps "missing" Earth — the result is a stable orbit.',
+ rev:'Revise: orbital motion — why the Moon stays in orbit'},
+];
+
+const CHECKLIST=[
+  {topic:'Energy',icon:'⚡',items:[
+    'I can name the main energy stores (kinetic, gravitational potential, elastic, thermal, chemical)',
+    'I can describe how energy is transferred by heating, work, electricity and radiation',
+    'I can use E = P × t to calculate energy in joules and kWh',
+    'I can calculate electricity costs using power (kW) × time (h) × price per kWh',
+    'I can explain conduction, convection and radiation with examples',
+    'I know that energy is always conserved — it cannot be created or destroyed',
+  ]},
+  {topic:'Motion & Forces',icon:'🏃',items:[
+    'I can use speed = distance ÷ time and rearrange to find any variable',
+    'I can draw and interpret distance-time graphs (gradient = speed, flat line = stationary)',
+    'I can find the resultant of forces in one dimension',
+    'I can state and apply Hooke\'s Law: F = ke (within elastic limit)',
+    'I can use P = F ÷ A to calculate pressure',
+    'I understand balanced and unbalanced forces and their effect on motion',
+    'I can describe non-contact forces: gravity, magnetism and static electricity',
+    'I can calculate moments using Moment = Force × distance',
+  ]},
+  {topic:'Waves',icon:'🌊',items:[
+    'I can distinguish transverse and longitudinal waves with examples',
+    'I know that sound cannot travel through a vacuum and requires a medium',
+    'I can state the law of reflection: angle of incidence = angle of reflection',
+    'I can explain refraction when light changes speed at a boundary',
+    'I know the speed of light in a vacuum (3×10⁸ m/s) and the approximate speed of sound in air (340 m/s)',
+    'I can explain why white light splits into a spectrum through a prism',
+  ]},
+  {topic:'Electricity & Magnetism',icon:'🔌',items:[
+    'I can use V = IR (Ohm\'s Law) and rearrange to find V, I or R',
+    'I understand the difference between series and parallel circuits',
+    'I know that ammeters go in series and voltmeters go in parallel',
+    'I can describe the rules for magnetic poles (like repel, unlike attract)',
+    'I know that a current-carrying wire creates a magnetic field',
+    'I can explain static electricity in terms of electron transfer',
+  ]},
+  {topic:'Matter',icon:'🧊',items:[
+    'I can describe particle arrangement and movement in solids, liquids and gases',
+    'I can use density = mass ÷ volume and explain why objects float or sink',
+    'I can explain why temperature stays constant during a change of state',
+    'I know that ice is less dense than water — and why this matters',
+    'I can describe Brownian motion and explain what it tells us about particles',
+    'I can explain diffusion using the particle model',
+  ]},
+  {topic:'Space Physics',icon:'🌌',items:[
+    'I can use W = mg to calculate weight and know g = 10 N/kg on Earth',
+    'I know the difference between mass (constant) and weight (depends on g)',
+    'I can explain how Earth\'s tilt causes seasons and differences in day length',
+    'I can define a light-year as a unit of distance',
+    'I know that gravity keeps planets in orbit around the Sun and the Moon around Earth',
+    'I can describe the structure of our Solar System and its place in the Milky Way galaxy',
+  ]},
+];
+
+// ── STATE ──
+const answers={};
+const checked={};
+
+// ── TABS ──
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+tab).classList.add('active');
+  if(tab==='marking') renderMarking();
+  if(tab==='score') renderScore();
+  window.scrollTo(0,0);
+}
+
+// ── CHECKLIST ──
+function renderChecklist(){
+  let total=0;
+  let html='';
+  CHECKLIST.forEach((g,gi)=>{
+    html+=`<div class="cl-group"><div class="cl-topic-hdr">${g.icon} ${g.topic}</div>`;
+    g.items.forEach((item,ii)=>{
+      const key=`${gi}-${ii}`;total++;
+      html+=`<div class="cl-item${checked[key]?' ck':''}" onclick="toggleCheck('${key}')">
+        <div class="cl-box"><span class="cl-tick">✓</span></div>
+        <div class="cl-text">${item}</div></div>`;
+    });
+    html+=`</div>`;
+  });
+  document.getElementById('checklist-container').innerHTML=html;
+  document.getElementById('cl-total').textContent=total;
+  updateCl();
+}
+
+function toggleCheck(key){
+  checked[key]=!checked[key];
+  const el=document.querySelector(`[onclick="toggleCheck('${key}')"]`);
+  if(el)el.classList.toggle('ck',!!checked[key]);
+  updateCl();
+}
+
+function updateCl(){
+  const total=CHECKLIST.reduce((s,g)=>s+g.items.length,0);
+  const done=Object.values(checked).filter(Boolean).length;
+  const pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('cl-done').textContent=done;
+  document.getElementById('cl-pct').textContent=pct+'%';
+  document.getElementById('cl-fill').style.width=pct+'%';
+  document.getElementById('cl-badge').textContent=pct+'%';
+}
+
+// ── QUESTIONS ──
+function renderQuestions(){
+  let html='';
+  TOPICS_Q.forEach(t=>{
+    const tQs=QS.filter(q=>q.topic===t.id);
+    html+=`<div class="qtopic-grp" data-qt="${t.id}">
+      <div class="qtopic-hdr">${t.icon} ${t.label} — ${tQs.length} questions</div>`;
+    tQs.forEach(q=>{
+      const dc=q.diff==='Foundation'?'df':q.diff==='Stretch'?'dx':'ds';
+      html+=`<div class="q-card" id="qc-${q.id}">
+        <div class="q-top"><div class="q-id">${q.id}</div>
+        <div class="q-body"><span class="dbadge ${dc}">${q.diff}</span>
+        <div class="q-text">${q.q}</div>
+        <div class="opts">`;
+      q.opts.forEach((o,oi)=>{
+        const sel=answers[q.id]===oi?' sel':'';
+        html+=`<button class="opt${sel}" onclick="pick('${q.id}',${oi})">
+          <span class="ol">${'ABCD'[oi]}</span>${o}</button>`;
+      });
+      html+=`</div></div></div></div>`;
+    });
+    html+=`</div>`;
+  });
+  document.getElementById('questions-container').innerHTML=html;
+  updateQProg();
+}
+
+function filterQ(topic,btn){
+  document.querySelectorAll('.qpill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.qtopic-grp').forEach(g=>{
+    g.style.display=(topic==='all'||g.dataset.qt===topic)?'block':'none';
+  });
+}
+
+function pick(qid,chosen){
+  answers[qid]=chosen;
+  const card=document.getElementById('qc-'+qid);
+  if(card)card.querySelectorAll('.opt').forEach((b,i)=>b.classList.toggle('sel',i===chosen));
+  updateQProg();
+}
+
+function updateQProg(){
+  const done=Object.keys(answers).length;
+  document.getElementById('q-prog').textContent=`${done} / ${QS.length}`;
+  document.getElementById('prog-badge').textContent=`${done} / ${QS.length} answered`;
+  document.getElementById('mk-badge').textContent=done;
+}
+
+// ── MARKING ──
+function renderMarking(){
+  let html='';
+  TOPICS_Q.forEach(t=>{
+    const tQs=QS.filter(q=>q.topic===t.id);
+    html+=`<div style="margin-bottom:28px"><div class="qtopic-hdr">${t.icon} ${t.label}</div>`;
+    tQs.forEach(q=>{
+      const chosen=answers[q.id];
+      const isSkip=chosen===undefined;
+      const isOk=chosen===q.ans;
+      const dc=q.diff==='Foundation'?'df':q.diff==='Stretch'?'dx':'ds';
+      const cc=isSkip?'mk-sk':isOk?'mk-ok':'mk-no';
+      html+=`<div class="q-card ${cc}">
+        <div class="q-top"><div class="q-id">${q.id}</div>
+        <div class="q-body"><span class="dbadge ${dc}">${q.diff}</span>
+        <div class="q-text">${q.q}</div>
+        <div class="opts" style="gap:6px">`;
+      q.opts.forEach((o,oi)=>{
+        const isAns=oi===q.ans;
+        const wasCh=oi===chosen;
+        let cls='opt-m';let suf='';
+        if(isAns){cls+=' mc';suf=`<span class="osuf sc">✓ Correct</span>`;}
+        if(wasCh&&!isAns){cls+=' mw';suf=`<span class="osuf sw">✗ Yours</span>`;}
+        html+=`<div class="${cls}"><span class="ol">${'ABCD'[oi]}</span>${o}${suf}</div>`;
+      });
+      html+=`</div>`;
+      if(isSkip)html+=`<div class="skip-box">⚠️ Not answered — correct: <strong>${q.opts[q.ans]}</strong></div>`;
+      html+=`<div class="exp-box"><div class="exp-lbl">Explanation</div>${q.exp}</div>`;
+      if(!isOk)html+=`<div class="rev-box">📖 ${q.rev}</div>`;
+      html+=`</div></div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`<div class="btn-row">
+    <button class="btn btn-indigo" onclick="goTab('score')">View Score &amp; Revise →</button>
+    <button class="btn btn-ghost" onclick="resetAll()">Reset all</button>
+  </div>`;
+  document.getElementById('marking-container').innerHTML=html;
+}
+
+// ── SCORE ──
+function renderScore(){
+  const total=QS.length;
+  const correct=QS.filter(q=>answers[q.id]===q.ans).length;
+  const wrong=QS.filter(q=>answers[q.id]!==undefined&&answers[q.id]!==q.ans).length;
+  const skipped=total-Object.keys(answers).length;
+  const pct=Math.round(correct/total*100);
+  const band=pct>=80?{l:'High',bg:'#22C55E',msg:"Excellent command of KS3 Physics. Push yourself with stretch questions and applying knowledge to unfamiliar scenarios."}
+           :pct>=65?{l:'Secure',bg:'#3B82F6',msg:"Good work — secure on most topics. Review the breakdown below and re-read notes on any red topics."}
+           :pct>=50?{l:'Developing',bg:'#EAB308',msg:"Making progress — several areas need more attention. Work through the revision list carefully and retry weak topics."}
+           :        {l:'Foundation',bg:'#EF4444',msg:"Significant revision needed. Start with the Knowledge tab, tick off the checklist, then retry the questions topic by topic."};
+
+  const ts={};
+  TOPICS_Q.forEach(t=>{ts[t.id]={label:t.label,icon:t.icon,total:0,correct:0,revs:[]};});
+  QS.forEach(q=>{
+    ts[q.topic].total++;
+    if(answers[q.id]===q.ans)ts[q.topic].correct++;
+    else if(answers[q.id]!==undefined)ts[q.topic].revs.push(q.rev);
+  });
+  const wrongQs=QS.filter(q=>answers[q.id]!==undefined&&answers[q.id]!==q.ans);
+  const revNotes=[...new Set(wrongQs.map(q=>q.rev))];
+
+  let html=`
+  <div class="score-hero">
+    <div class="score-ring">
+      <div class="score-pct">${pct}%</div>
+      <div class="score-lbl">Score</div>
+    </div>
+    <span class="score-band" style="background:${band.bg};color:#fff">${band.l}</span>
+    <div class="score-msg">${band.msg}</div>
+  </div>
+  <div class="score-grid">
+    <div class="score-stat"><div class="ssval" style="color:var(--green)">${correct}</div><div class="sslbl">Correct</div></div>
+    <div class="score-stat"><div class="ssval" style="color:var(--red)">${wrong}</div><div class="sslbl">Incorrect</div></div>
+    <div class="score-stat"><div class="ssval" style="color:var(--amber)">${skipped}</div><div class="sslbl">Skipped</div></div>
+    <div class="score-stat"><div class="ssval" style="color:var(--indigo-light)">${correct}/${total}</div><div class="sslbl">Total</div></div>
+  </div>`;
+
+  html+=`<div class="bc-card"><div class="bc-title">📊 Topic breakdown</div>`;
+  Object.values(ts).forEach(t=>{
+    if(!t.total)return;
+    const p=Math.round(t.correct/t.total*100);
+    const dot=p>=75?'rg':p>=50?'ra':'rr';
+    const bc=p>=75?'var(--green)':p>=50?'var(--amber)':'var(--red)';
+    html+=`<div class="rag-row">
+      <div class="rdot ${dot}"></div>
+      <span class="rname">${t.icon} ${t.label}</span>
+      <div class="rbar"><div class="rbarfill" style="width:${p}%;background:${bc}"></div></div>
+      <span class="rscore">${t.correct}/${t.total} · ${p}%</span>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  if(revNotes.length){
+    html+=`<div class="rev-card"><div class="rv-title">🔴 Priority revision — ${revNotes.length} area${revNotes.length>1?'s':''}</div>`;
+    revNotes.forEach(r=>html+=`<div class="rv-item"><span class="rv-arr">→</span>${r}</div>`);
+    html+=`</div>`;
+  }
+
+  const byTopic={};
+  wrongQs.forEach(q=>{
+    if(!byTopic[q.topic])byTopic[q.topic]={icon:ts[q.topic].icon,label:ts[q.topic].label,qs:[]};
+    byTopic[q.topic].qs.push(q);
+  });
+  if(Object.keys(byTopic).length){
+    html+=`<div class="pts-card"><div class="pts-title">📖 Points to revise — question by question</div>`;
+    Object.values(byTopic).forEach(t=>{
+      html+=`<div style="font-size:12px;font-weight:700;color:var(--amber);margin:10px 0 6px;font-family:'Space Mono',monospace">${t.icon} ${t.label}</div>`;
+      t.qs.forEach((q,i)=>{
+        html+=`<div class="pt-item"><span class="pt-bul">${i+1}</span>
+          <div><div style="font-size:12px;opacity:.7;margin-bottom:3px">${q.q}</div>
+          <div style="font-size:11px;color:var(--green)">Correct: ${q.opts[q.ans]}</div>
+          <div style="font-size:11px;margin-top:2px">${q.rev}</div></div></div>`;
+      });
+    });
+    html+=`</div>`;
+  }
+
+  html+=`<div class="btn-row">
+    <button class="btn btn-indigo" onclick="goTab('questions')">← Retry questions</button>
+    <button class="btn btn-ghost" onclick="resetAll()">Reset everything</button>
+  </div>`;
+
+  document.getElementById('score-container').innerHTML=html;
+  document.getElementById('sc-badge').textContent=pct+'%';
+}
+
+function goTab(tab){
+  const map={knowledge:0,summary:1,questions:2,marking:3,score:4};
+  const btn=document.querySelectorAll('.tab')[map[tab]];
+  if(btn)switchTab(tab,btn);
+}
+
+function resetAll(){
+  if(!confirm('Reset all answers and checklist?'))return;
+  Object.keys(answers).forEach(k=>delete answers[k]);
+  Object.keys(checked).forEach(k=>delete checked[k]);
+  renderQuestions();renderChecklist();goTab('questions');
+}
+
+renderChecklist();
+renderQuestions();
+</script>
+</body>
+</html>
